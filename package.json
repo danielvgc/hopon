@@ -1,0 +1,17 @@
+{
+  "name": "hopon-monorepo-root",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Root helper scripts to run frontend (Next.js) and backend (Flask) together for local development",
+  "scripts": {
+    "setup:backend": "sh -c 'if [ ! -d backend/.venv ]; then python3 -m venv backend/.venv && backend/.venv/bin/python -m pip install --upgrade pip setuptools wheel && backend/.venv/bin/python -m pip install -e backend; else echo \"Backend venv already exists\"; fi'",
+    "cleanup": "sh -c 'for port in 3000 3001 3002 3003 8000; do fuser -k $port/tcp 2>/dev/null || true; done; sleep 2'",
+    "dev:frontend": "sh -c \"cd frontend && npm run dev\"",
+    "dev:backend": "sh -c \"./backend/.venv/bin/python backend/app.py\"",
+    "dev": "npm run cleanup && npm run setup:backend && npx concurrently \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
