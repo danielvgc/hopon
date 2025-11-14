@@ -23,7 +23,9 @@ export default function HomePage() {
 
   const loadData = React.useCallback(async () => {
     try {
+      console.log("Loading nearby events...");
       const nearby = await Api.nearbyEvents();
+      console.log("Nearby events loaded:", nearby);
       let joined: HopOnEvent[] = [];
       let hosted: HopOnEvent[] = [];
       if (status === "authenticated") {
