@@ -70,8 +70,8 @@ def create_app() -> Flask:
         frontend_origins = [os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')]
 
     # Also accept any Vercel preview deployment URL for development/testing
-    # These are temporary URLs used during preview deployments
-    frontend_origins.append(r"https://hopon-pruebas-[a-z0-9]+-danielvgcs-projects\.vercel\.app")
+    # These are temporary URLs used during preview deployments (regex pattern for *.vercel.app)
+    frontend_origins.append(r"https://[a-z0-9\-]+-vercel\.app")
 
     # Log the configured origins for debugging
     print(f"[HOPON] CORS configured for origins: {frontend_origins}", flush=True)
