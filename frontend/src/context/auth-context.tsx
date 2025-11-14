@@ -47,7 +47,7 @@ const LOCAL_STORAGE_KEYS = {
   authPayload: "hoponAuthPayload",
 };
 
-const POPUP_FEATURES = "width=500,height=600,noopener,noreferrer";
+const POPUP_FEATURES = "width=500,height=600";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = React.useState<AuthStatus>("loading");
@@ -214,7 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loginUrl = Api.getGoogleLoginUrl(window.location.origin);
     const popup = window.open(loginUrl, "hopon-google-auth", POPUP_FEATURES);
     if (!popup) {
-      return Promise.reject(new Error("Unable to open login window"));
+      return Promise.reject(new Error("Unable to open login window. Please check if pop-ups are blocked."));
     }
     popupRef.current = popup;
     return new Promise<void>((resolve, reject) => {
@@ -233,15 +233,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         if (p.closed) {
           window.clearInterval(interval);
-          if (loginResolver.current) {
+          // Check if auth was stored in localStorage (fallback from popup)
+          const storedPayload = window.localStorage.getItem(LOCAL_STORAGE_KEYS.authPayload);
+          if (storedPayload && loginResolver.current) {
+            try {
+              const payload = JSON.parse(storedPayload) as {
+                user?: HopOnUser;
+                access_token?: string;
+              };
+              applyAuthPayload(payload);
+              window.localStorage.removeItem(LOCAL_STORAGE_KEYS.authPayload);
+              loginResolver.current.resolve();
+            } catch (err) {
+              loginResolver.current.reject(err);
+            }
+          } else if (loginResolver.current) {
             loginResolver.current.reject(new Error("Authentication window closed"));
-            loginResolver.current = null;
           }
+          loginResolver.current = null;
           popupRef.current = null;
         }
       }, 500);
     });
-  }, []);
+  }, [applyAuthPayload]);
 
   const logout = React.useCallback(async () => {
     try {
