@@ -6,8 +6,10 @@ import { Api, type HopOnEvent } from "@/lib/api";
 import * as React from "react";
 import { FALLBACK_EVENTS } from "@/lib/fallback-data";
 import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
   const [events, setEvents] = React.useState<HopOnEvent[]>([]);
   const [joinedEventIds, setJoinedEventIds] = React.useState<number[]>([]);
   const [pendingAction, setPendingAction] = React.useState<
@@ -18,8 +20,7 @@ export default function HomePage() {
   const [selectedSport, setSelectedSport] = React.useState<string>("All");
   const filterRef = React.useRef<HTMLDivElement | null>(null);
   const [hostedEvents, setHostedEvents] = React.useState<HopOnEvent[]>([]);
-  const { status, user, guestName, setGuestName, guestTokens, rememberGuestToken, clearGuestToken } =
-    useAuth();
+  const { status, user } = useAuth();
 
   const loadData = React.useCallback(async () => {
     try {
@@ -32,16 +33,13 @@ export default function HomePage() {
         const mine = await Api.myEvents();
         joined = mine.joined || [];
         hosted = mine.hosted || [];
-      }
-      setEvents(nearby);
-      if (status === "authenticated") {
         setJoinedEventIds(joined.map((event) => event.id));
         setHostedEvents(hosted);
       } else {
-        const guestJoinedIds = Object.keys(guestTokens).map((id) => Number(id));
-        setJoinedEventIds(guestJoinedIds);
+        setJoinedEventIds([]);
         setHostedEvents([]);
       }
+      setEvents(nearby);
       setErrorMessage(null);
     } catch (error) {
       console.error("Failed to load events", error);
@@ -50,7 +48,7 @@ export default function HomePage() {
       setHostedEvents([]);
       setErrorMessage("Couldn't load events. Check your connection and try again.");
     }
-  }, [guestTokens, status]);
+  }, [status]);
 
   const availableSports = React.useMemo(() => {
     const sportsSource =
@@ -85,40 +83,21 @@ export default function HomePage() {
   }, [loadData]);
 
   async function handleJoin(eventId: number) {
+    // If user is not authenticated, redirect to sign in
+    if (status !== "authenticated") {
+      router.push("/login");
+      return;
+    }
+
     if (pendingAction !== null) {
       return;
     }
     setPendingAction({ id: eventId, type: "join" });
     try {
-      if (status === "authenticated") {
-        await Api.joinEvent(eventId, {
-          player_name: user?.username,
-        });
-        await loadData();
-      } else {
-        let ensuredName = guestName;
-        if (!ensuredName && typeof window !== "undefined") {
-          const input = window.prompt("Enter your name so other players know who joined:");
-          ensuredName = input ? input.trim() : "";
-          if (ensuredName) {
-            setGuestName(ensuredName);
-          }
-        }
-        if (!ensuredName) {
-          return;
-        }
-        const existingToken = guestTokens[eventId];
-        const result = await Api.joinEvent(eventId, {
-          player_name: ensuredName,
-          guest_token: existingToken,
-        });
-        if (result.guest_token) {
-          rememberGuestToken(eventId, result.guest_token);
-        }
-        setJoinedEventIds((prev) => (prev.includes(eventId) ? prev : [...prev, eventId]));
-        const refreshed = await Api.nearbyEvents();
-        setEvents(refreshed);
-      }
+      await Api.joinEvent(eventId, {
+        player_name: user?.username,
+      });
+      await loadData();
     } catch (error) {
       console.error("Failed to join event", error);
       setErrorMessage("Unable to join this event right now. Please try again.");
@@ -133,21 +112,8 @@ export default function HomePage() {
     }
     setPendingAction({ id: eventId, type: "leave" });
     try {
-      if (status === "authenticated") {
-        await Api.leaveEvent(eventId, {});
-        await loadData();
-      } else {
-        const guestToken = guestTokens[eventId];
-        if (!guestToken) {
-          setErrorMessage("We couldn't verify your spot for this game. Try joining again to refresh access.");
-          return;
-        }
-        await Api.leaveEvent(eventId, { guest_token: guestToken });
-        clearGuestToken(eventId);
-        setJoinedEventIds((prev) => prev.filter((id) => id !== eventId));
-        const refreshed = await Api.nearbyEvents();
-        setEvents(refreshed);
-      }
+      await Api.leaveEvent(eventId, {});
+      await loadData();
     } catch (error) {
       console.error("Failed to leave event", error);
       setErrorMessage("Unable to leave this event right now. Please try again.");
