@@ -99,7 +99,7 @@ export default function LoginPage() {
               </button>
 
               <button
-                onClick={() => setActiveMode("google")}
+                onClick={handleGoogleLogin}
                 disabled={loading}
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-800 py-3 font-semibold text-neutral-100 hover:bg-neutral-700 transition disabled:opacity-50"
               >
