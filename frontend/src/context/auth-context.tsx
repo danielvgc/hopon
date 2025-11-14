@@ -24,7 +24,8 @@ type AuthContextValue = {
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
-const API_ORIGIN = (() => {
+// Note: API_ORIGIN logic kept but not used directly (used in API client for CORS)
+(() => {
   try {
     const origin = new URL(API_BASE_URL).origin;
     if (typeof window !== "undefined" && origin === window.location.origin) {
