@@ -30,10 +30,13 @@ def create_app() -> Flask:
     # Configuration
     # Support DATABASE_URL for production (Postgres). Fall back to local sqlite for dev.
     database_url = os.environ.get('DATABASE_URL')
-    if database_url:
-        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-    else:
+    if not database_url:
+        # Fail fast in production if DATABASE_URL is missing
+        if os.environ.get('ENV', 'development') == 'production':
+            raise RuntimeError("DATABASE_URL environment variable is required in production. Set it to your PostgreSQL connection string.")
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hopon.db'
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     # Allow explicit ENV setting (development/production)
     app.config['ENV'] = os.environ.get('ENV', 'development')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
