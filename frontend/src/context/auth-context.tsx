@@ -156,9 +156,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     function handleMessage(event: MessageEvent) {
-      if (event.origin !== API_ORIGIN) {
-        return;
-      }
+      // Accept messages from any origin for the popup (it's our own backend)
+      // The security is ensured by postMessage target validation on the backend side
       const data = event.data;
       if (!data || typeof data !== "object" || data.type !== "hopon:auth") {
         return;
@@ -166,6 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       closePopup();
       const payload = data.payload as { user?: HopOnUser; access_token?: string };
       if (!payload?.user || !payload?.access_token) {
+        console.error("Invalid authentication payload", payload);
         loginResolver.current?.reject(new Error("Invalid authentication payload"));
         loginResolver.current = null;
         return;

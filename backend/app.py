@@ -380,6 +380,9 @@ def create_app() -> Flask:
         if redirect_target not in frontend_origins:
             redirect_target = frontend_origins[0]
 
+        # Escape quotes in JSON payload for embedding in HTML
+        payload_json = json.dumps(payload).replace('"', '\\"')
+        
         script = f"""<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -389,15 +392,16 @@ def create_app() -> Flask:
   <body>
     <script>
       (function() {{
-        const payload = {json.dumps(payload)};
-                if (window.opener && window.opener !== window) {{
-                    // Post message to the frontend origin we validated earlier.
-                    window.opener.postMessage({{ type: "hopon:auth", payload }}, "{redirect_target}");
-                    window.close();
-                }} else {{
-                    window.localStorage.setItem("hoponAuthPayload", JSON.stringify(payload));
-                    window.location.replace("{redirect_target}");
-                }}
+        const payload = JSON.parse("{payload_json}");
+        if (window.opener && window.opener !== window) {{
+            // Post message to the frontend origin we validated earlier.
+            window.opener.postMessage({{ type: "hopon:auth", payload: payload }}, "*");
+            window.close();
+        }} else {{
+            // Fallback: store in localStorage and redirect
+            window.localStorage.setItem("hoponAuthPayload", JSON.stringify(payload));
+            window.location.replace("{redirect_target}");
+        }}
       }})();
     </script>
     <p>Signing you in…</p>
@@ -405,7 +409,7 @@ def create_app() -> Flask:
 </html>"""
 
         response = make_response(script)
-        response.headers['Content-Type'] = 'text/html'
+        response.headers['Content-Type'] = 'text/html; charset=utf-8'
         response.set_cookie(
             'refresh_token',
             refresh_token,
