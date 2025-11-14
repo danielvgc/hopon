@@ -12,6 +12,7 @@ env/
 .env
 .env.local
 .env.*.local
+DEPLOYMENT_EXACT_VALUES.md
 
 # IDE and OS
 .vscode/
