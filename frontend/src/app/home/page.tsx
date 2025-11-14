@@ -10,6 +10,9 @@ import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  React.useEffect(() => {
+    document.title = "Home - HopOn";
+  }, []);
   const router = useRouter();
   const [events, setEvents] = React.useState<HopOnEvent[]>([]);
   const [joinedEventIds, setJoinedEventIds] = React.useState<number[]>([]);

@@ -5,6 +5,10 @@ import { Api } from "@/lib/api";
 import * as React from "react";
 
 export default function CreatePage() {
+  React.useEffect(() => {
+    document.title = "Create Game - HopOn";
+  }, []);
+
   const [form, setForm] = React.useState({
     name: "",
     sport: "Basketball",

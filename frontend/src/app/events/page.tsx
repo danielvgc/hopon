@@ -9,6 +9,10 @@ import { useAuth } from "@/context/auth-context";
 type TabKey = "joined" | "hosted";
 
 export default function EventsPage() {
+  React.useEffect(() => {
+    document.title = "Events - HopOn";
+  }, []);
+
   const [tab, setTab] = React.useState<TabKey>("joined");
   const [joined, setJoined] = React.useState<HopOnEvent[]>([]);
   const [hosted, setHosted] = React.useState<HopOnEvent[]>([]);

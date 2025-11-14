@@ -7,8 +7,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { useEffect } from "react";
 
 export default function ExplorePage() {
+  useEffect(() => {
+    document.title = "Explore - HopOn";
+  }, []);
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">

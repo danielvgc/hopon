@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect } from "react";
 
 export default function LandingPage() {
+  useEffect(() => {
+    document.title = "HopOn - Find Pickup Games Nearby";
+  }, []);
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-neutral-950 via-neutral-950 to-red-950/10 px-6 py-12 text-neutral-100">
       <div className="mx-auto max-w-2xl text-center space-y-8">

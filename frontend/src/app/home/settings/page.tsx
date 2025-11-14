@@ -28,8 +28,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useEffect } from "react";
 
 export default function SettingsPage() {
+  useEffect(() => {
+    document.title = "Settings - HopOn";
+  }, []);
+
   const [settings, setSettings] = useState({
     // Profile Settings
     firstName: "John",

@@ -40,6 +40,10 @@ type EventDisplay = {
 const DEFAULT_FILTER = "Nearby";
 
 export default function DiscoverPage() {
+  React.useEffect(() => {
+    document.title = "Discover Games - HopOn";
+  }, []);
+
   const [query, setQuery] = React.useState("");
   const [players, setPlayers] = React.useState<HopOnUser[]>([]);
   const [events, setEvents] = React.useState<HopOnEvent[]>([]);

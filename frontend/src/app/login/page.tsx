@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import WebLayout from "@/components/web-layout";
@@ -9,6 +9,9 @@ import { useAuth } from "@/context/auth-context";
 type LoginMode = "credentials" | "google" | "demo";
 
 export default function LoginPage() {
+  useEffect(() => {
+    document.title = "Sign In - HopOn";
+  }, []);
   const router = useRouter();
   const { login, loginWithGoogle, loginAsDemo } = useAuth();
 

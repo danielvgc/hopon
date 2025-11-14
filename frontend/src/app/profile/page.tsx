@@ -2,8 +2,13 @@
 
 import WebLayout from "@/components/web-layout";
 import { useAuth } from "@/context/auth-context";
+import { useEffect } from "react";
 
 export default function ProfilePage() {
+  useEffect(() => {
+    document.title = "Profile - HopOn";
+  }, []);
+  
   const { status, user, loginWithGoogle, logout } = useAuth();
   const isAuthenticated = status === "authenticated";
 

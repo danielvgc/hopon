@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import WebLayout from "@/components/web-layout";
@@ -8,7 +8,11 @@ import { useAuth } from "@/context/auth-context";
 
 type SignupMode = "email" | "google";
 
-export default function SignUpPage() {
+export default function SignupPage() {
+  useEffect(() => {
+    document.title = "Create Account - HopOn";
+  }, []);
+
   const router = useRouter();
   const { signup, loginWithGoogle } = useAuth();
 
