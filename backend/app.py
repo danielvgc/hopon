@@ -72,14 +72,24 @@ def create_app() -> Flask:
     # Add production domain explicitly
     frontend_origins.append('https://hopon-pruebas.vercel.app')
     
-    # Also accept any Vercel preview deployment URL for development/testing
-    # These are temporary URLs used during preview deployments (regex pattern for *.vercel.app)
-    frontend_origins.append(r"https://[a-z0-9\-]+-vercel\.app")
-
     # Log the configured origins for debugging
     print(f"[HOPON] CORS configured for origins: {frontend_origins}", flush=True)
 
-    # Configure CORS to allow the configured frontend origins and allow credentials
+    # Custom CORS handler to allow *.vercel.app domains with credentials
+    def cors_middleware(response):
+        origin = request.headers.get('Origin')
+        if origin:
+            # Check if origin matches allowed list or is a vercel.app subdomain
+            if origin in frontend_origins or origin.endswith('.vercel.app'):
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, HEAD'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
+    app.after_request(cors_middleware)
+    
+    # Also use CORS() for basic preflight handling
     CORS(app, supports_credentials=True, resources={r"/*": {"origins": frontend_origins}})
 
     oauth = OAuth()
