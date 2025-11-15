@@ -69,6 +69,9 @@ def create_app() -> Flask:
     else:
         frontend_origins = [os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')]
 
+    # Add production domain explicitly
+    frontend_origins.append('https://hopon-pruebas.vercel.app')
+    
     # Also accept any Vercel preview deployment URL for development/testing
     # These are temporary URLs used during preview deployments (regex pattern for *.vercel.app)
     frontend_origins.append(r"https://[a-z0-9\-]+-vercel\.app")
