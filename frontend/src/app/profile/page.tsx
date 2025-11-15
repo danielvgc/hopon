@@ -3,7 +3,7 @@
 import WebLayout from "@/components/web-layout";
 import { useAuth } from "@/context/auth-context";
 import { useEffect, useState } from "react";
-import { Calendar, Users, UserCheck, Trophy, Clock, MapPin, X } from "lucide-react";
+import { Calendar, Users, UserCheck, Trophy, Clock, MapPin, X, Check, AlertCircle } from "lucide-react";
 
 export default function ProfilePage() {
   useEffect(() => {
@@ -14,31 +14,91 @@ export default function ProfilePage() {
   const isAuthenticated = status === "authenticated";
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
+    username: user?.username || "",
     bio: user?.bio || "",
     location: user?.location || "",
     sports: user?.sports || "",
   });
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setEditData((prev) => ({ ...prev, [name]: value }));
+    
+    // Check username availability when username field changes
+    if (name === "username") {
+      checkUsernameAvailability(value);
+    }
+  };
+
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username || username === user?.username) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    if (username.length < 3) {
+      setUsernameAvailable(false);
+      return;
+    }
+
+    setCheckingUsername(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/username-available?username=${encodeURIComponent(username)}`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      const data = await response.json();
+      setUsernameAvailable(data.available || false);
+    } catch (error) {
+      console.error("Error checking username:", error);
+      setUsernameAvailable(false);
+    } finally {
+      setCheckingUsername(false);
+    }
   };
 
   const handleSaveProfile = async () => {
+    // Validate username if changed
+    if (editData.username !== user?.username && !usernameAvailable) {
+      setSaveMessage("Username is not available");
+      return;
+    }
+
     setIsSaving(true);
     setSaveMessage("");
     try {
-      // Simulate API call - in real implementation, call backend
-      console.log("Saving profile:", editData);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/profile`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editData),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to save profile");
+      }
+
       setSaveMessage("Profile updated successfully!");
       setTimeout(() => {
         setIsEditModalOpen(false);
         setSaveMessage("");
+        // Optionally refresh user data - this would typically come from a context refresh
+        window.location.reload();
       }, 1500);
     } catch (error) {
-      setSaveMessage("Failed to save profile");
+      setSaveMessage(error instanceof Error ? error.message : "Failed to save profile");
       console.error(error);
     } finally {
       setIsSaving(false);
@@ -246,6 +306,40 @@ export default function ProfilePage() {
 
             {/* Form */}
             <div className="space-y-5 mb-6">
+              {/* Username */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  Username
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="username"
+                    value={editData.username}
+                    onChange={handleEditChange}
+                    placeholder="Your username"
+                    className="w-full px-4 py-2.5 rounded-xl border border-neutral-700 bg-neutral-800/50 text-white placeholder-neutral-500 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition pr-10"
+                  />
+                  {editData.username !== user?.username && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {checkingUsername ? (
+                        <div className="w-5 h-5 border-2 border-neutral-500 border-t-red-400 rounded-full animate-spin"></div>
+                      ) : usernameAvailable ? (
+                        <Check className="w-5 h-5 text-green-400" />
+                      ) : usernameAvailable === false ? (
+                        <AlertCircle className="w-5 h-5 text-red-400" />
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+                {editData.username !== user?.username && usernameAvailable === false && !checkingUsername && (
+                  <p className="text-xs text-red-400 mt-1">Username already taken or invalid</p>
+                )}
+                {editData.username !== user?.username && usernameAvailable === true && (
+                  <p className="text-xs text-green-400 mt-1">Username is available</p>
+                )}
+              </div>
+
               {/* Bio */}
               <div>
                 <label className="block text-sm font-medium text-neutral-300 mb-2">
