@@ -715,6 +715,84 @@ def create_app() -> Flask:
                     )
         return jsonify({'authenticated': False}), 401
 
+    @app.get("/auth/username-available")
+    def check_username_available():
+        """Check if a username is available (not taken)."""
+        username = (request.args.get('username') or '').strip()
+        
+        if not username:
+            return jsonify({'error': 'Username parameter is required'}), 400
+        
+        if len(username) < 3:
+            return jsonify({'available': False, 'message': 'Username must be at least 3 characters'}), 200
+        
+        if len(username) > 50:
+            return jsonify({'available': False, 'message': 'Username must be at most 50 characters'}), 200
+        
+        # Check if username already exists
+        existing = User.query.filter_by(username=username).first()
+        
+        if existing:
+            return jsonify({'available': False, 'message': 'Username already taken'}), 200
+        
+        return jsonify({'available': True, 'message': 'Username is available'}), 200
+
+    @app.patch("/auth/profile")
+    def update_profile():
+        """Update user profile information. Requires authentication."""
+        if not g.current_user:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        data = request.get_json(silent=True) or {}
+        user = g.current_user
+        
+        # Update bio if provided
+        if 'bio' in data:
+            user.bio = data.get('bio') or None
+        
+        # Update location if provided
+        if 'location' in data:
+            user.location = data.get('location') or None
+        
+        # Update sports if provided
+        if 'sports' in data:
+            user.sports = data.get('sports') or None
+        
+        # Update username if provided (with uniqueness check)
+        if 'username' in data:
+            new_username = (data.get('username') or '').strip()
+            
+            if not new_username:
+                return jsonify({'error': 'Username cannot be empty'}), 400
+            
+            if len(new_username) < 3:
+                return jsonify({'error': 'Username must be at least 3 characters'}), 400
+            
+            if len(new_username) > 50:
+                return jsonify({'error': 'Username must be at most 50 characters'}), 400
+            
+            # Check if new username is different from current
+            if new_username != user.username:
+                # Check if username already exists
+                existing = User.query.filter_by(username=new_username).first()
+                if existing:
+                    return jsonify({'error': 'Username already taken'}), 409
+                
+                user.username = new_username
+        
+        try:
+            db.session.commit()
+            return jsonify({
+                'message': 'Profile updated successfully',
+                'user': user.to_dict()
+            }), 200
+        except IntegrityError as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to update profile'}), 409
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': 'Failed to update profile'}), 500
+
     # Event Management
     # Utility
     def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
