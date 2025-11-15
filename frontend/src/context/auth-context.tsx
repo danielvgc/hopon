@@ -141,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(storedPayload) as {
           user?: HopOnUser;
           access_token?: string;
+          needs_username_setup?: boolean;
         };
         applyAuthPayload(parsed);
       } finally {
@@ -179,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       closePopup();
-      const payload = data.payload as { user?: HopOnUser; access_token?: string };
+      const payload = data.payload as { user?: HopOnUser; access_token?: string; needs_username_setup?: boolean };
       if (!payload?.user || !payload?.access_token) {
         console.error("Invalid authentication payload", payload);
         loginResolver.current?.reject(new Error("Invalid authentication payload"));
@@ -256,6 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const payload = JSON.parse(storedPayload) as {
                 user?: HopOnUser;
                 access_token?: string;
+                needs_username_setup?: boolean;
               };
               applyAuthPayload(payload);
               window.localStorage.removeItem(LOCAL_STORAGE_KEYS.authPayload);
