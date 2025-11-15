@@ -159,9 +159,9 @@ export default function SetupUsernamePage() {
       <div className="flex items-center justify-center min-h-screen px-4 py-8">
         <div className="w-full max-w-2xl">
           {/* Card */}
-          <div className="rounded-3xl border border-neutral-800 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 p-8 shadow-2xl">
+          <div className="relative rounded-3xl border border-neutral-800 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 p-8 shadow-2xl">
             {/* Decorative elements */}
-            <div className="absolute inset-0 rounded-3xl">
+            <div className="absolute inset-0 rounded-3xl pointer-events-none">
               <div className="absolute top-0 right-0 w-96 h-96 bg-red-500/5 rounded-full blur-3xl -z-10"></div>
               <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-500/5 rounded-full blur-3xl -z-10"></div>
             </div>
