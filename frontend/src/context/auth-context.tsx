@@ -20,6 +20,7 @@ type AuthContextValue = {
   getGuestToken: (eventId: number) => string | undefined;
   rememberGuestToken: (eventId: number, token: string) => void;
   clearGuestToken: (eventId: number) => void;
+  setUser: (user: HopOnUser | null) => void;
 };
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
@@ -80,10 +81,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("guest");
   }, []);
 
-  const applyAuthPayload = React.useCallback((payload: { user?: HopOnUser; access_token?: string | null }) => {
+  const applyAuthPayload = React.useCallback((payload: { user?: HopOnUser; access_token?: string | null; needs_username_setup?: boolean }) => {
     let nextStatus: AuthStatus | null = null;
     if (payload.user) {
-      setUser(payload.user);
+      // Add needs_username_setup flag to user object for checking in pages
+      const userWithFlag = {
+        ...payload.user,
+        needs_username_setup: payload.needs_username_setup || false,
+      } as HopOnUser & { needs_username_setup: boolean };
+      setUser(userWithFlag);
       nextStatus = "authenticated";
     }
     if (payload.access_token) {
@@ -92,6 +98,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     if (nextStatus) {
       setStatus(nextStatus);
+    }
+
+    // If user needs to set up username, redirect to setup page
+    if (payload.needs_username_setup && typeof window !== "undefined") {
+      console.log("[Auth] User needs username setup, redirecting to setup page");
+      // Use a small delay to ensure state is updated first
+      setTimeout(() => {
+        window.location.href = "/auth/setup-username";
+      }, 100);
     }
   }, []);
 
@@ -354,6 +369,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       getGuestToken,
       rememberGuestToken,
       clearGuestToken,
+      setUser,
     }),
     [
       status,

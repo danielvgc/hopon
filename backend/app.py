@@ -356,8 +356,12 @@ def create_app() -> Flask:
         display_name = userinfo.get('name') or email.split('@')[0]
         given_name = userinfo.get('given_name') or display_name
         username_seed = "".join(ch if ch.isalnum() else "_" for ch in given_name.lower()).strip("_") or "player"
+        
+        is_new_user = not user
+        needs_username_setup = False
 
         if not user:
+            # Create user with temporary username that will be updated
             username = ensure_unique_username(username_seed)
             user = User(
                 username=username,
@@ -371,6 +375,7 @@ def create_app() -> Flask:
                 avatar_url=userinfo.get('picture'),
             )
             db.session.add(user)
+            needs_username_setup = True
         else:
             user.google_sub = user.google_sub or google_sub
             if userinfo.get('picture'):
@@ -385,6 +390,7 @@ def create_app() -> Flask:
             'message': 'Login successful',
             'user': user.to_dict(),
             'access_token': access_token,
+            'needs_username_setup': needs_username_setup,
         }
         redirect_target = session.pop('oauth_next', frontend_origins[0])
         # Ensure redirect_target is one of the allowed frontend origins
@@ -472,6 +478,9 @@ def create_app() -> Flask:
         display_name = name
         given_name = name
         username_seed = "".join(ch if ch.isalnum() else "_" for ch in given_name.lower()).strip("_") or "player"
+        
+        is_new_user = not user
+        needs_username_setup = False
 
         if not user:
             username = ensure_unique_username(username_seed)
@@ -487,6 +496,7 @@ def create_app() -> Flask:
                 avatar_url=None,
             )
             db.session.add(user)
+            needs_username_setup = True
         else:
             user.google_sub = user.google_sub or google_sub
 
@@ -499,6 +509,7 @@ def create_app() -> Flask:
             'message': 'Dev login successful',
             'user': user.to_dict(),
             'access_token': access_token,
+            'needs_username_setup': needs_username_setup,
         }
 
         script = f"""<!DOCTYPE html>
