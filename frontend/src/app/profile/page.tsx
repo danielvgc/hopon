@@ -30,11 +30,23 @@ export default function ProfilePage() {
   const { status, user, logout, accessToken, setUser } = useAuth();
   const isAuthenticated = status === "authenticated";
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  // Helper function to normalize sports data
+  const normalizeSports = (sports: any): string[] => {
+    if (Array.isArray(sports)) {
+      return sports;
+    }
+    if (typeof sports === 'string' && sports) {
+      return sports.split(',').map((s) => s.trim()).filter((s) => s);
+    }
+    return [];
+  };
+
   const [editData, setEditData] = useState({
     username: user?.username || "",
     bio: user?.bio || "",
     location: user?.location || "",
-    sports: Array.isArray(user?.sports) ? user.sports : [],
+    sports: normalizeSports(user?.sports),
   });
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -48,10 +60,10 @@ export default function ProfilePage() {
         username: user.username || "",
         bio: user.bio || "",
         location: user.location || "",
-        sports: Array.isArray(user.sports) ? user.sports : [],
+        sports: normalizeSports(user.sports),
       });
       setUsernameAvailable(null);
-      console.log("[Profile] Modal opened, synced editData:", { username: user.username, bio: user.bio });
+      console.log("[Profile] Modal opened, synced editData:", { username: user.username, bio: user.bio, sports: normalizeSports(user.sports) });
     }
   }, [isEditModalOpen, user]);
 
@@ -219,9 +231,9 @@ export default function ProfilePage() {
                     <span>{user.location}</span>
                   </div>
                 )}
-                {user.sports && Array.isArray(user.sports) && user.sports.length > 0 && (
+                {user.sports && normalizeSports(user.sports).length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {user.sports.map((sport, idx) => (
+                    {normalizeSports(user.sports).map((sport, idx) => (
                       <span key={idx} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-medium">
                         {sport}
                       </span>

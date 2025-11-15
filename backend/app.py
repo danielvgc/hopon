@@ -769,7 +769,15 @@ def create_app() -> Flask:
         
         # Update sports if provided
         if 'sports' in data:
-            user.sports = data.get('sports') or None
+            sports_data = data.get('sports')
+            if sports_data:
+                # Handle both array and string formats
+                if isinstance(sports_data, list):
+                    user.sports = ', '.join(sports_data)
+                else:
+                    user.sports = sports_data
+            else:
+                user.sports = None
         
         # Update username if provided (with uniqueness check)
         if 'username' in data:
