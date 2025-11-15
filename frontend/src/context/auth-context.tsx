@@ -85,10 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let nextStatus: AuthStatus | null = null;
     if (payload.user) {
       // Add needs_username_setup flag to user object for checking in pages
-      const userWithFlag = {
+      const userWithFlag: HopOnUser = {
         ...payload.user,
         needs_username_setup: payload.needs_username_setup || false,
-      } as HopOnUser & { needs_username_setup: boolean };
+      };
       setUser(userWithFlag);
       nextStatus = "authenticated";
     }

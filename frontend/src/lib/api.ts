@@ -32,6 +32,7 @@ export type HopOnUser = {
   avatar_url?: string | null;
   is_following?: boolean;
   isFollowing?: boolean;
+  needs_username_setup?: boolean;
 };
 
 type UnauthorizedHandler = () => Promise<boolean>;
