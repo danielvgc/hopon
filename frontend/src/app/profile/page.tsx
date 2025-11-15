@@ -6,6 +6,22 @@ import { API_BASE_URL } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { Calendar, Users, UserCheck, Trophy, Clock, MapPin, X, Check, AlertCircle } from "lucide-react";
 
+// List of available sports
+const AVAILABLE_SPORTS = [
+  "Basketball",
+  "Football",
+  "Soccer",
+  "Tennis",
+  "Volleyball",
+  "Baseball",
+  "Badminton",
+  "Hockey",
+  "Rugby",
+  "Pickleball",
+  "Table Tennis",
+  "Squash",
+];
+
 export default function ProfilePage() {
   useEffect(() => {
     document.title = "Profile - HopOn";
@@ -18,7 +34,7 @@ export default function ProfilePage() {
     username: user?.username || "",
     bio: user?.bio || "",
     location: user?.location || "",
-    sports: user?.sports || "",
+    sports: Array.isArray(user?.sports) ? user.sports : [],
   });
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -32,7 +48,7 @@ export default function ProfilePage() {
         username: user.username || "",
         bio: user.bio || "",
         location: user.location || "",
-        sports: user.sports || "",
+        sports: Array.isArray(user.sports) ? user.sports : [],
       });
       setUsernameAvailable(null);
       console.log("[Profile] Modal opened, synced editData:", { username: user.username, bio: user.bio });
@@ -47,6 +63,17 @@ export default function ProfilePage() {
     if (name === "username") {
       checkUsernameAvailability(value);
     }
+  };
+
+  const handleSportToggle = (sport: string) => {
+    setEditData((prev) => {
+      const currentSports = Array.isArray(prev.sports) ? prev.sports : [];
+      if (currentSports.includes(sport)) {
+        return { ...prev, sports: currentSports.filter((s) => s !== sport) };
+      } else {
+        return { ...prev, sports: [...currentSports, sport] };
+      }
+    });
   };
 
   const checkUsernameAvailability = async (username: string) => {
@@ -185,6 +212,21 @@ export default function ProfilePage() {
                 </div>
                 {user.bio && (
                   <p className="text-neutral-300 text-sm mb-3 italic">{user.bio}</p>
+                )}
+                {user.location && (
+                  <div className="flex items-center gap-2 text-neutral-400 text-sm mb-3">
+                    <MapPin className="w-4 h-4" />
+                    <span>{user.location}</span>
+                  </div>
+                )}
+                {user.sports && Array.isArray(user.sports) && user.sports.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {user.sports.map((sport, idx) => (
+                      <span key={idx} className="px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-medium">
+                        {sport}
+                      </span>
+                    ))}
+                  </div>
                 )}
                 <div className="flex items-center gap-2 text-sm text-red-400">
                   <Calendar className="w-4 h-4" />
@@ -410,18 +452,34 @@ export default function ProfilePage() {
 
               {/* Sports */}
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-neutral-300 mb-3">
                   Favorite Sports
                 </label>
-                <input
-                  type="text"
-                  name="sports"
-                  value={editData.sports}
-                  onChange={handleEditChange}
-                  placeholder="e.g., Basketball, Football, Tennis"
-                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-700 bg-neutral-800/50 text-white placeholder-neutral-500 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition"
-                />
-                <p className="text-xs text-neutral-500 mt-1">Separate multiple sports with commas</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {AVAILABLE_SPORTS.map((sport) => {
+                    const isSelected = Array.isArray(editData.sports) && editData.sports.includes(sport);
+                    return (
+                      <button
+                        key={sport}
+                        type="button"
+                        onClick={() => handleSportToggle(sport)}
+                        className={`px-4 py-2.5 rounded-lg font-medium text-sm transition border ${
+                          isSelected
+                            ? "bg-red-500/30 border-red-500/60 text-red-200"
+                            : "bg-neutral-800/50 border-neutral-700 text-neutral-400 hover:border-red-500/40 hover:bg-neutral-800/70"
+                        }`}
+                      >
+                        {isSelected && <span className="mr-2">✓</span>}
+                        {sport}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-neutral-500 mt-2">
+                  {Array.isArray(editData.sports) && editData.sports.length > 0
+                    ? `${editData.sports.length} sport${editData.sports.length !== 1 ? "s" : ""} selected`
+                    : "Select at least one sport"}
+                </p>
               </div>
             </div>
 
