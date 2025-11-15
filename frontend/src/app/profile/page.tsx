@@ -32,7 +32,7 @@ export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   // Helper function to normalize sports data
-  const normalizeSports = (sports: any): string[] => {
+  const normalizeSports = (sports: string[] | string | null | undefined): string[] => {
     if (Array.isArray(sports)) {
       return sports;
     }
