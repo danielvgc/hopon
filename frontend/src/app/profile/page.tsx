@@ -11,7 +11,7 @@ export default function ProfilePage() {
     document.title = "Profile - HopOn";
   }, []);
   
-  const { status, user, logout } = useAuth();
+  const { status, user, logout, accessToken } = useAuth();
   const isAuthenticated = status === "authenticated";
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
@@ -97,12 +97,21 @@ export default function ProfilePage() {
     setIsSaving(true);
     setSaveMessage("");
     try {
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      
+      // Add Authorization header if we have an access token
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
+
       const response = await fetch(
         `${API_BASE_URL}/auth/profile`,
         {
           method: "PATCH",
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(editData),
         }
       );
