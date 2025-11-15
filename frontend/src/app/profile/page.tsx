@@ -11,7 +11,7 @@ export default function ProfilePage() {
     document.title = "Profile - HopOn";
   }, []);
   
-  const { status, user, logout, accessToken } = useAuth();
+  const { status, user, logout, accessToken, setUser } = useAuth();
   const isAuthenticated = status === "authenticated";
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
@@ -121,12 +121,19 @@ export default function ProfilePage() {
         throw new Error(error.error || "Failed to save profile");
       }
 
+      const data = await response.json();
+      console.log("[Profile] Profile updated, new user data:", data.user);
+
       setSaveMessage("Profile updated successfully!");
+      
+      // Update user in auth context instead of reloading
+      if (setUser && data.user) {
+        setUser(data.user);
+      }
+      
       setTimeout(() => {
         setIsEditModalOpen(false);
         setSaveMessage("");
-        // Optionally refresh user data - this would typically come from a context refresh
-        window.location.reload();
       }, 1500);
     } catch (error) {
       setSaveMessage(error instanceof Error ? error.message : "Failed to save profile");
