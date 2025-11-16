@@ -3,7 +3,8 @@
 import WebLayout from "@/components/web-layout";
 import MapDisplay from "@/components/map-display";
 import { EventCard } from "@/components/event-card";
-import { Api, type HopOnEvent } from "@/lib/api";
+import { EventDetailsModal } from "@/components/event-details-modal";
+import { Api, type HopOnEvent, type HopOnUser } from "@/lib/api";
 import Image from "next/image";
 import * as React from "react";
 import { FALLBACK_EVENTS } from "@/lib/fallback-data";
@@ -26,6 +27,9 @@ export default function HomePage() {
   const filterRef = React.useRef<HTMLDivElement | null>(null);
   const [hostedEvents, setHostedEvents] = React.useState<HopOnEvent[]>([]);
   const [selectedEventIdOnMap, setSelectedEventIdOnMap] = React.useState<number | undefined>();
+  const [selectedEventForModal, setSelectedEventForModal] = React.useState<HopOnEvent | null>(null);
+  const [eventParticipants, setEventParticipants] = React.useState<HopOnUser[]>([]);
+  const [isLoadingParticipants, setIsLoadingParticipants] = React.useState(false);
   const { status, user } = useAuth();
 
   const loadData = React.useCallback(async () => {
@@ -87,6 +91,30 @@ export default function HomePage() {
   React.useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  async function handleViewEventDetails(event: HopOnEvent) {
+    setSelectedEventForModal(event);
+    setIsLoadingParticipants(true);
+    try {
+      // Fetch participants - this would need a backend endpoint
+      // For now, we'll fetch all events and extract participants
+      setEventParticipants([]); // Placeholder
+    } catch (error) {
+      console.error("Failed to load event details", error);
+    } finally {
+      setIsLoadingParticipants(false);
+    }
+  }
+
+  function handleCloseModal() {
+    setSelectedEventForModal(null);
+    setEventParticipants([]);
+  }
+
+  function handleEventDeleted() {
+    handleCloseModal();
+    void loadData();
+  }
 
   async function handleJoin(eventId: number) {
     // If user is not authenticated, redirect to sign in
@@ -270,6 +298,7 @@ export default function HomePage() {
                     distanceKm={event.distance_km}
                     hostName={event.host?.username}
                     description={event.notes || undefined}
+                    onViewDetails={() => handleViewEventDetails(event)}
                     onRightActionClick={
                       joinedSet.has(event.id)
                         ? () => handleLeave(event.id)
@@ -287,6 +316,22 @@ export default function HomePage() {
                 )))}
         </div>
       </div>
+
+      {/* Event Details Modal */}
+      {selectedEventForModal && (
+        <EventDetailsModal
+          event={selectedEventForModal}
+          isOpen={!!selectedEventForModal}
+          onClose={handleCloseModal}
+          currentUser={user}
+          onEventDeleted={handleEventDeleted}
+          onEventUpdated={() => {
+            handleCloseModal();
+            void loadData();
+          }}
+          participants={eventParticipants}
+        />
+      )}
     </WebLayout>
   );
 }
