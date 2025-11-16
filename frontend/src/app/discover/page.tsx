@@ -52,13 +52,21 @@ export default function DiscoverPage() {
   const isAuthenticated = status === "authenticated";
   const [playerOverrides, setPlayerOverrides] = React.useState<Record<string, boolean>>({});
 
+  // Fetch players only when authenticated
   React.useEffect(() => {
+    if (status !== "authenticated") {
+      return; // Don't fetch if not authenticated
+    }
     Api.playersNearby().then(setPlayers).catch(() => setPlayers([]));
-  }, []);
+  }, [status]);
 
+  // Fetch events only when authenticated
   React.useEffect(() => {
+    if (status !== "authenticated") {
+      return; // Don't fetch if not authenticated
+    }
     Api.nearbyEvents().then(setEvents).catch(() => setEvents([]));
-  }, []);
+  }, [status]);
 
   const playerItems = React.useMemo<PlayerDisplay[]>(() => {
     const apiPlayers = players.map((player) => {
@@ -259,34 +267,36 @@ export default function DiscoverPage() {
 
   return (
     <WebLayout title="Discover">
-      <div className="relative">
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search players, sports, locations..."
-          className="w-full rounded-lg sm:rounded-2xl border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-2 sm:py-3 pl-9 sm:pl-11 text-xs sm:text-sm text-neutral-100 placeholder:text-neutral-500"
-        />
-        <Search className="absolute left-3 top-1/2 size-4 sm:size-5 -translate-y-1/2 text-neutral-500" />
-      </div>
+      <div className="space-y-3 sm:space-y-4">
+        {/* Search Input */}
+        <div className="relative">
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search players, sports, locations..."
+            className="w-full rounded-lg sm:rounded-2xl border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-2 sm:py-3 pl-9 sm:pl-11 text-xs sm:text-sm text-neutral-100 placeholder:text-neutral-500"
+          />
+          <Search className="absolute left-3 top-1/2 size-4 sm:size-5 -translate-y-1/2 text-neutral-500" />
+        </div>
 
-      <div className="mt-3 sm:mt-4 flex flex-wrap gap-1.5 sm:gap-2 pb-2">
-        {filters.map((chip) => {
-          const isActive = chip === activeFilter;
-          return (
-            <button
-              key={chip}
-              type="button"
-              onClick={() => setActiveFilter(chip)}
-              className={
-                isActive
-                  ? "rounded-full bg-red-500 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white"
-                  : "rounded-full border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-neutral-200 hover:border-neutral-700 hover:text-white"
-              }
-            >
-              {chip}
-            </button>
-          );
-        })}
+        {/* Sport Filter - Dropdown Selector */}
+        <div className="w-full">
+          <label htmlFor="sport-filter" className="block text-xs font-medium text-neutral-300 mb-2">
+            Filter by Sport
+          </label>
+          <select
+            id="sport-filter"
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value)}
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-xs sm:text-sm text-neutral-100 focus:border-red-400 focus:outline-none"
+          >
+            {filters.map((filter) => (
+              <option key={`select-${filter}`} value={filter}>
+                {filter}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="mt-4 sm:mt-6 space-y-6 sm:space-y-10 pb-10">
