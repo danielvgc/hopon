@@ -17,18 +17,14 @@ export default function PWAInstaller() {
     }
 
     // Listen for app install prompt
-    let deferredPrompt;
-
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
-      deferredPrompt = e;
       console.log('PWA install prompt available');
       // You could show an install button here
     });
 
     window.addEventListener('appinstalled', () => {
       console.log('App installed successfully');
-      deferredPrompt = null;
     });
   }, []);
 

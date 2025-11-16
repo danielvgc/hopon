@@ -239,7 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [resetToGuest, applyAuthPayload]);
+  }, [resetToGuest, applyAuthPayload, user]);
 
   const loginWithGoogle = React.useCallback(() => {
     if (typeof window === "undefined") {

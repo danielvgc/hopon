@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   /* config options here */
   poweredByHeader: false,
   compress: true,
-  optimizeFonts: true,
   
   // Add headers to prevent caching of discover page
   async headers() {

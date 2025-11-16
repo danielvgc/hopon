@@ -29,7 +29,6 @@ export default function HomePage() {
   const [selectedEventIdOnMap, setSelectedEventIdOnMap] = React.useState<number | undefined>();
   const [selectedEventForModal, setSelectedEventForModal] = React.useState<HopOnEvent | null>(null);
   const [eventParticipants, setEventParticipants] = React.useState<HopOnUser[]>([]);
-  const [isLoadingParticipants, setIsLoadingParticipants] = React.useState(false);
   const { status, user } = useAuth();
 
   const loadData = React.useCallback(async () => {
@@ -94,15 +93,12 @@ export default function HomePage() {
 
   async function handleViewEventDetails(event: HopOnEvent) {
     setSelectedEventForModal(event);
-    setIsLoadingParticipants(true);
     try {
       // Fetch participants - this would need a backend endpoint
       // For now, we'll fetch all events and extract participants
       setEventParticipants([]); // Placeholder
     } catch (error) {
       console.error("Failed to load event details", error);
-    } finally {
-      setIsLoadingParticipants(false);
     }
   }
 

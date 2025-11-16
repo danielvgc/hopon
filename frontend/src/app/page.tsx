@@ -90,7 +90,7 @@ export default function LandingPage() {
               Why HopOn?
             </h2>
             <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-              Finding players for pickup sports shouldn't be difficult
+              Finding players for pickup sports shouldn&rsquo;t be difficult
             </p>
           </div>
 
@@ -159,7 +159,7 @@ export default function LandingPage() {
               <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 p-5 space-y-3">
                 <div className="text-3xl">🎯</div>
                 <h4 className="font-semibold text-neutral-100">Play More</h4>
-                <p className="text-sm text-neutral-400">Never miss a game—get instant access to events whenever you're free</p>
+                <p className="text-sm text-neutral-400">Never miss a game—get instant access to events whenever you&rsquo;re free</p>
               </div>
             </div>
           </div>
