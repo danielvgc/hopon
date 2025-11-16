@@ -1,5 +1,5 @@
 // Service Worker for HopOn PWA
-const CACHE_NAME = 'hopon-v1';
+const CACHE_NAME = 'hopon-v2';
 const urlsToCache = [
   '/',
   '/logo.png',
@@ -31,6 +31,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Don't cache HTML pages - always fetch fresh to avoid stale content issues
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('.html') || 
+      (url.pathname !== '/' && !url.pathname.includes('.') && !url.pathname.includes('/api/'))) {
+    // This is likely an HTML page route (no extension or .html) - fetch fresh from network
+    return event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match('/'))
+    );
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       // Return cached version if available
@@ -49,7 +60,7 @@ self.addEventListener('fetch', (event) => {
           // Clone the response
           const responseToCache = response.clone();
 
-          // Cache successful responses for future use
+          // Cache successful responses for future use (only non-HTML assets)
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
           });
