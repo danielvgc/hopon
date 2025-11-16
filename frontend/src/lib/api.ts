@@ -216,6 +216,20 @@ export const Api = {
       body: JSON.stringify(payload),
     });
   },
+  async updateEvent(eventId: number, payload: {
+    name?: string;
+    sport?: string;
+    location?: string;
+    event_date?: string;
+    max_players?: number;
+    skill_level?: string;
+    notes?: string;
+  }) {
+    return http<{ message: string }>(`/events/${eventId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
   async deleteEvent(eventId: number) {
     return http<{ message: string }>(`/events/${eventId}`, {
       method: "DELETE",

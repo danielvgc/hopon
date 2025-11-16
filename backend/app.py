@@ -1058,6 +1058,70 @@ def create_app() -> Flask:
         event = Event.query.get_or_404(event_id)
         return jsonify(event.to_dict()), 200
 
+    @app.patch("/events/<int:event_id>")
+    def update_event(event_id):
+        """Update an event (host only)"""
+        event = Event.query.get_or_404(event_id)
+        
+        # Check if current user is the host
+        if g.current_user and g.current_user.id != event.host_user_id:
+            return jsonify({'error': 'Only the host can update this event'}), 403
+        if not g.current_user:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        data = request.get_json() or {}
+        
+        try:
+            # Update allowed fields
+            if 'name' in data:
+                event.name = data['name']
+            if 'sport' in data:
+                event.sport = data['sport']
+            if 'location' in data:
+                event.location = data['location']
+            if 'notes' in data:
+                event.notes = data['notes']
+            if 'max_players' in data:
+                event.max_players = data['max_players']
+            if 'event_date' in data:
+                event.event_date = datetime.fromisoformat(data['event_date']) if data['event_date'] else None
+            if 'skill_level' in data:
+                event.skill_level = data['skill_level']
+            # Note: latitude and longitude should be updated via create event, not patch
+            
+            db.session.commit()
+            return jsonify({
+                'message': 'Event updated successfully',
+                'event': event.to_dict()
+            }), 200
+        except Exception as e:
+            db.session.rollback()
+            print(f"[ERROR] Failed to update event: {e}", flush=True)
+            return jsonify({'error': 'Failed to update event'}), 500
+
+    @app.delete("/events/<int:event_id>")
+    def delete_event(event_id):
+        """Delete an event (host only)"""
+        event = Event.query.get_or_404(event_id)
+        
+        # Check if current user is the host
+        if g.current_user and g.current_user.id != event.host_user_id:
+            return jsonify({'error': 'Only the host can delete this event'}), 403
+        if not g.current_user:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        try:
+            # Delete all participants
+            EventParticipant.query.filter_by(event_id=event_id).delete()
+            # Delete the event
+            db.session.delete(event)
+            db.session.commit()
+            return jsonify({'message': 'Event deleted successfully'}), 200
+        except Exception as e:
+            db.session.rollback()
+            print(f"[ERROR] Failed to delete event: {e}", flush=True)
+            return jsonify({'error': 'Failed to delete event'}), 500
+
     @app.post("/events/<int:event_id>/join")
     def join_event(event_id):
         """Join a specific event/game"""
