@@ -131,17 +131,9 @@ export default function LocationPicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (!apiKey) {
-    return (
-      <div className="w-full rounded-lg sm:rounded-xl border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-500">
-        Google Maps API key not configured
-      </div>
-    );
-  }
-
   // Initialize services when Google Maps loads
   useEffect(() => {
-    if (!window.google?.maps) return;
+    if (!apiKey || !window.google?.maps) return;
 
     if (!autocompleteServiceRef.current) {
       autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
@@ -149,7 +141,15 @@ export default function LocationPicker({
       const dummyMap = new window.google.maps.Map(dummyDiv);
       placesServiceRef.current = new window.google.maps.places.PlacesService(dummyMap);
     }
-  }, []);
+  }, [apiKey]);
+
+  if (!apiKey) {
+    return (
+      <div className="w-full rounded-lg sm:rounded-xl border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-red-500">
+        Google Maps API key not configured
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative w-full">
