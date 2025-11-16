@@ -1,6 +1,7 @@
 "use client";
 
 import WebLayout from "@/components/web-layout";
+import MapDisplay from "@/components/map-display";
 import { EventCard } from "@/components/event-card";
 import { Api, type HopOnEvent } from "@/lib/api";
 import Image from "next/image";
@@ -24,6 +25,7 @@ export default function HomePage() {
   const [selectedSport, setSelectedSport] = React.useState<string>("All");
   const filterRef = React.useRef<HTMLDivElement | null>(null);
   const [hostedEvents, setHostedEvents] = React.useState<HopOnEvent[]>([]);
+  const [selectedEventIdOnMap, setSelectedEventIdOnMap] = React.useState<number | undefined>();
   const { status, user } = useAuth();
 
   const loadData = React.useCallback(async () => {
@@ -174,6 +176,19 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Map Section */}
+      {events.length > 0 && (
+        <div className="mt-12 sm:mt-16">
+          <h3 className="mb-3 sm:mb-4 text-lg sm:text-2xl font-semibold">Events Map</h3>
+          <MapDisplay
+            events={events}
+            selectedEventId={selectedEventIdOnMap}
+            onEventSelect={(event) => setSelectedEventIdOnMap(event.id)}
+            height="350px"
+          />
+        </div>
+      )}
 
       <div className="mt-16 sm:mt-24">
         <div className="mb-3 sm:mb-4 flex items-center justify-between flex-wrap gap-2">

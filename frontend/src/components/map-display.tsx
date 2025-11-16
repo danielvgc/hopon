@@ -26,9 +26,11 @@ export default function MapDisplay({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<HopOnEvent | null>(null);
 
   // Initialize global Google Maps loader
   useEffect(() => {
@@ -173,6 +175,7 @@ export default function MapDisplay({
       });
 
       marker.addListener("click", () => {
+        setSelectedEvent(event);
         onEventSelect?.(event);
       });
 
@@ -203,10 +206,73 @@ export default function MapDisplay({
   }
 
   return (
-    <div
-      ref={mapRef}
-      className="w-full rounded-lg border border-neutral-700 bg-neutral-950"
-      style={{ height }}
-    />
-  );
-}
+    <div className="relative w-full rounded-lg border border-neutral-700 overflow-hidden">
+      <div
+        ref={mapRef}
+        className="w-full bg-neutral-950"
+        style={{ height }}
+      />
+      
+      {/* Event Info Popup Card */}
+      {selectedEvent && (
+        <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-neutral-900 border border-neutral-700 rounded-lg p-3 sm:p-4 shadow-lg z-10">
+          <div className="space-y-2 sm:space-y-3">
+            {/* Event Title and Sport */}
+            <div>
+              <h3 className="font-semibold text-sm sm:text-base text-white line-clamp-2">
+                {selectedEvent.name}
+              </h3>
+              <p className="text-xs sm:text-sm text-red-500 font-medium">
+                {selectedEvent.sport}
+              </p>
+            </div>
+
+            {/* Location */}
+            {selectedEvent.location && (
+              <p className="text-xs sm:text-sm text-neutral-300">
+                📍 {selectedEvent.location}
+              </p>
+            )}
+
+            {/* Date and Time */}
+            {selectedEvent.event_date && (
+              <p className="text-xs sm:text-sm text-neutral-300">
+                📅 {new Date(selectedEvent.event_date).toLocaleDateString()} at{" "}
+                {new Date(selectedEvent.event_date).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            )}
+
+            {/* Players Count */}
+            <p className="text-xs sm:text-sm text-neutral-300">
+              👥 {selectedEvent.current_players}/{selectedEvent.max_players} players
+            </p>
+
+            {/* Skill Level */}
+            {selectedEvent.skill_level && (
+              <p className="text-xs sm:text-sm text-neutral-300">
+                Level: <span className="text-yellow-400">{selectedEvent.skill_level}</span>
+              </p>
+            )}
+
+            {/* Host */}
+            {selectedEvent.host && (
+              <p className="text-xs sm:text-sm text-neutral-400">
+                Host: {selectedEvent.host.username}
+              </p>
+            )}
+
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedEvent(null)}
+              className="w-full mt-2 bg-red-600 hover:bg-red-500 text-white text-xs sm:text-sm py-2 rounded transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+
