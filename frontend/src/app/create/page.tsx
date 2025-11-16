@@ -75,12 +75,15 @@ export default function CreatePage() {
           />
         </Field>
         <Field label="Date & Time">
-          <input
-            type="datetime-local"
-            value={form.event_date}
-            onChange={(e) => update("event_date", e.target.value)}
-            className="w-full min-w-0 rounded-lg sm:rounded-xl border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm"
-          />
+          <div className="overflow-x-hidden">
+            <input
+              type="datetime-local"
+              value={form.event_date}
+              onChange={(e) => update("event_date", e.target.value)}
+              className="w-full rounded-lg sm:rounded-xl border border-neutral-800 bg-neutral-900/60 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm"
+              style={{ boxSizing: 'border-box' }}
+            />
+          </div>
         </Field>
         <Field label="Max Players">
           <input
