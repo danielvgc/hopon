@@ -307,9 +307,8 @@ export default function DiscoverPage() {
             onChange={(e) => setActiveFilter(e.target.value)}
             className="w-full rounded-lg border border-neutral-800 bg-neutral-900/60 px-3 py-2 text-xs sm:text-sm text-neutral-100 focus:border-red-400 focus:outline-none cursor-pointer"
           >
-            {Array.isArray(filters) && filters.length > 0 ? (
+            {Array.isArray(filters) && filters.length > 0 && filters.every(f => typeof f === 'string') ? (
               filters.map((filter) => {
-                // Ensure filter is a string
                 const filterStr = String(filter).trim();
                 return filterStr ? (
                   <option key={`select-${filterStr}`} value={filterStr}>
