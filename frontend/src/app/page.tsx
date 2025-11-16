@@ -178,7 +178,7 @@ export default function LandingPage() {
       </div>
 
       {/* Final CTA Section */}
-      <div className="px-6 py-12 sm:py-16 text-center space-y-6">
+      <div className="px-6 py-12 sm:py-16 text-center space-y-6 bg-gradient-to-b from-neutral-950 to-neutral-900">
         <h2 className="text-2xl sm:text-3xl font-bold text-neutral-100">
           Ready to Hop On?
         </h2>
