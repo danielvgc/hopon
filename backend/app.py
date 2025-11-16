@@ -772,7 +772,7 @@ def create_app() -> Flask:
                         ),
                         200,
                     )
-        return jsonify({'authenticated': False}), 401
+        return jsonify({'authenticated': False}), 200
 
     @app.get("/auth/username-available")
     def check_username_available():
