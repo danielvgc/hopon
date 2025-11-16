@@ -6,7 +6,6 @@ import { EventCard } from "@/components/event-card";
 import { Search } from "lucide-react";
 import { Api, type HopOnEvent, type HopOnUser } from "@/lib/api";
 import { FALLBACK_EVENTS, FALLBACK_PLAYERS } from "@/lib/fallback-data";
-import { useAuth } from "@/context/auth-context";
 import * as React from "react";
 
 type PlayerDisplay = {
@@ -48,25 +47,17 @@ export default function DiscoverPage() {
   const [players, setPlayers] = React.useState<HopOnUser[]>([]);
   const [events, setEvents] = React.useState<HopOnEvent[]>([]);
   const [activeFilter, setActiveFilter] = React.useState(DEFAULT_FILTER);
-  const { status, user } = useAuth();
-  const isAuthenticated = status === "authenticated";
   const [playerOverrides, setPlayerOverrides] = React.useState<Record<string, boolean>>({});
 
-  // Fetch players only when authenticated
+  // Fetch players - same for everyone
   React.useEffect(() => {
-    if (status !== "authenticated") {
-      return; // Don't fetch if not authenticated
-    }
     Api.playersNearby().then(setPlayers).catch(() => setPlayers([]));
-  }, [status]);
+  }, []);
 
-  // Fetch events only when authenticated
+  // Fetch events - same for everyone
   React.useEffect(() => {
-    if (status !== "authenticated") {
-      return; // Don't fetch if not authenticated
-    }
     Api.nearbyEvents().then(setEvents).catch(() => setEvents([]));
-  }, [status]);
+  }, []);
 
   const playerItems = React.useMemo<PlayerDisplay[]>(() => {
     const apiPlayers = players.map((player) => {
@@ -245,24 +236,22 @@ export default function DiscoverPage() {
         return;
       }
       const currentlyFollowing = player.isFollowing ?? false;
-      if (isAuthenticated && user) {
-        try {
-          if (currentlyFollowing) {
-            await Api.unfollow(player.backendId, user.id);
-          } else {
-            await Api.follow(player.backendId, user.id);
-          }
-        } catch (error) {
-          console.error("Failed to toggle follow", error);
-          return;
+      try {
+        if (currentlyFollowing) {
+          await Api.unfollow(player.backendId, player.backendId);
+        } else {
+          await Api.follow(player.backendId, player.backendId);
         }
+      } catch (error) {
+        console.error("Failed to toggle follow", error);
+        return;
       }
       setPlayerOverrides((prev) => ({
         ...prev,
         [player.id]: !currentlyFollowing,
       }));
     },
-    [isAuthenticated, user]
+    []
   );
 
   return (
