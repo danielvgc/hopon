@@ -1193,6 +1193,46 @@ def create_app() -> Flask:
             'hosted': [e.to_dict() for e in hosted],
         }), 200
 
+    @app.post("/admin/delete-user-by-username/<username>")
+    def admin_delete_user_by_username(username):
+        """Admin endpoint to delete a user by username. Requires ADMIN_SECRET header."""
+        admin_secret = os.environ.get('ADMIN_SECRET', 'dev-admin-secret')
+        provided_secret = request.headers.get('X-Admin-Secret', '')
+        
+        if provided_secret != admin_secret:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        user = User.query.filter(db.func.lower(User.username) == username.lower()).first()
+        if not user:
+            return jsonify({'error': f'User "{username}" not found'}), 404
+        
+        user_id = user.id
+        print(f"[ADMIN] Deleting user: {user.username} (ID: {user_id}), Sports: {user.sports}", flush=True)
+        
+        # Delete event participants (user joined events)
+        ep_count = EventParticipant.query.filter_by(user_id=user_id).count()
+        EventParticipant.query.filter_by(user_id=user_id).delete()
+        
+        # Delete events hosted by user
+        ev_count = Event.query.filter_by(host_user_id=user_id).count()
+        Event.query.filter_by(host_user_id=user_id).delete()
+        
+        # Delete follow relationships
+        follow_count = Follow.query.filter((Follow.follower_id == user_id) | (Follow.followee_id == user_id)).count()
+        Follow.query.filter((Follow.follower_id == user_id) | (Follow.followee_id == user_id)).delete()
+        
+        # Delete the user
+        db.session.delete(user)
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'User "{username}" deleted successfully',
+            'user_id': user_id,
+            'event_participants_deleted': ep_count,
+            'events_deleted': ev_count,
+            'follows_deleted': follow_count
+        }), 200
+
     return app
     
 
