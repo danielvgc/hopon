@@ -401,25 +401,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Delete Account Section */}
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 backdrop-blur p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1 h-6 bg-red-500 rounded-full"></div>
-              <h2 className="text-xl font-bold text-white">Danger Zone</h2>
-            </div>
-            <div className="space-y-4">
-              <p className="text-neutral-300 text-sm">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-              <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:border-red-500/60 transition font-medium"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete Account
-              </button>
-            </div>
-          </div>
+          {/* Delete Account Section - Moved to bottom */}
         </div>
 
         {/* Upcoming Events */}
@@ -435,6 +417,26 @@ export default function ProfilePage() {
               <p className="text-neutral-400 text-sm sm:text-base">No upcoming games yet</p>
               <p className="text-neutral-500 text-xs sm:text-sm mt-1">Join or create games to see them here</p>
             </div>
+          </div>
+        </div>
+
+        {/* Delete Account Section - Danger Zone */}
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 backdrop-blur p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-6 bg-red-500 rounded-full"></div>
+            <h2 className="text-xl font-bold text-white">Danger Zone</h2>
+          </div>
+          <div className="space-y-4">
+            <p className="text-neutral-300 text-sm">
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:border-red-500/60 transition font-medium"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Account
+            </button>
           </div>
         </div>
       </div>
