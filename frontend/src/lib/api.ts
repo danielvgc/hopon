@@ -50,16 +50,20 @@ if (typeof window !== "undefined") {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored) {
     accessToken = stored;
+    console.log("[API] Restored access token from localStorage");
   }
 }
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
+  console.log("[API] setAccessToken called with token:", token ? "****" : "null");
   if (typeof window !== "undefined") {
     if (token) {
       window.localStorage.setItem(STORAGE_KEY, token);
+      console.log("[API] Token saved to localStorage");
     } else {
       window.localStorage.removeItem(STORAGE_KEY);
+      console.log("[API] Token cleared from localStorage");
     }
   }
 }
@@ -81,6 +85,9 @@ function buildHeaders(inputHeaders?: HeadersInit, body?: RequestInit["body"]) {
   }
   if (accessToken) {
     headers.set("Authorization", `Bearer ${accessToken}`);
+    console.log("[API] Sending request with access token");
+  } else {
+    console.log("[API] Sending request WITHOUT access token (token is null)");
   }
   return headers;
 }
