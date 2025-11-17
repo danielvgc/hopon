@@ -40,11 +40,28 @@ export type HopOnUser = {
 
 type UnauthorizedHandler = () => Promise<boolean>;
 
+const STORAGE_KEY = "hopon_access_token";
+
 let accessToken: string | null = null;
 let unauthorizedHandler: UnauthorizedHandler | null = null;
 
+// Load access token from localStorage on module load
+if (typeof window !== "undefined") {
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    accessToken = stored;
+  }
+}
+
 export function setAccessToken(token: string | null) {
   accessToken = token;
+  if (typeof window !== "undefined") {
+    if (token) {
+      window.localStorage.setItem(STORAGE_KEY, token);
+    } else {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+  }
 }
 
 export function registerUnauthorizedHandler(handler: UnauthorizedHandler) {
