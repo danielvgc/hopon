@@ -396,7 +396,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="text-neutral-400 text-sm mb-2">Joined</p>
-                <p className="text-white font-medium">January 2024</p>
+                <p className="text-white font-medium">{formatJoinDate(user?.created_at)}</p>
               </div>
             </div>
           </div>
