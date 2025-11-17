@@ -73,7 +73,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
-  // Sync editData when modal opens or user data changes
+  // Sync editData when modal opens (only once when modal opens)
   useEffect(() => {
     if (isEditModalOpen && user) {
       setEditData({
@@ -89,7 +89,7 @@ export default function ProfilePage() {
       setUsernameAvailable(null);
       console.log("[Profile] Modal opened, synced editData:", { username: user.username, bio: user.bio, sports: normalizeSports(user.sports) });
     }
-  }, [isEditModalOpen, user]);
+  }, [isEditModalOpen]);
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
