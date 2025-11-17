@@ -63,15 +63,21 @@ export default function SignupPage() {
           ? err.message
           : "Failed to sign up. Please try again.";
       
+      console.log("[Signup] Error occurred:", errMsg);
+      
       // Check if account already exists and redirect to login
       if (errMsg.toLowerCase().includes("already exists") || 
           errMsg.toLowerCase().includes("already registered") ||
           errMsg.toLowerCase().includes("email already") ||
-          errMsg.toLowerCase().includes("user already")) {
+          errMsg.toLowerCase().includes("user already") ||
+          errMsg.toLowerCase().includes("exists") ||
+          errMsg.toLowerCase().includes("registered")) {
+        console.log("[Signup] Redirecting to login due to existing account");
         router.push("/login");
         return;
       }
       
+      console.log("[Signup] Showing error message:", errMsg);
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -95,15 +101,21 @@ export default function SignupPage() {
       const errMsg =
         err instanceof Error ? err.message : "Failed to sign up with Google";
       
+      console.log("[Google Signup] Error occurred:", errMsg);
+      
       // Check if account already exists and redirect to login
       if (errMsg.toLowerCase().includes("already exists") || 
           errMsg.toLowerCase().includes("already registered") ||
           errMsg.toLowerCase().includes("email already") ||
-          errMsg.toLowerCase().includes("user already")) {
+          errMsg.toLowerCase().includes("user already") ||
+          errMsg.toLowerCase().includes("exists") ||
+          errMsg.toLowerCase().includes("registered")) {
+        console.log("[Google Signup] Redirecting to login due to existing account");
         router.push("/login");
         return;
       }
       
+      console.log("[Google Signup] Showing error message:", errMsg);
       setError(errMsg);
     } finally {
       setLoading(false);
