@@ -59,25 +59,6 @@ export default function LandingPage() {
               Browse as Guest
             </Link>
           </div>
-
-          {/* Features */}
-          <div className="pt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
-            <div className="space-y-2">
-              <div className="text-2xl">🏃</div>
-              <h3 className="font-semibold text-neutral-100">Find Games</h3>
-              <p className="text-sm text-neutral-400">Discover sports events and pickup games near you</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl">👥</div>
-              <h3 className="font-semibold text-neutral-100">Connect</h3>
-              <p className="text-sm text-neutral-400">Meet other players who share your interests</p>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl">📍</div>
-              <h3 className="font-semibold text-neutral-100">Nearby</h3>
-              <p className="text-sm text-neutral-400">Get matched with players in your area</p>
-            </div>
-          </div>
         </div>
       </div>
 
