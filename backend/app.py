@@ -606,12 +606,26 @@ def create_app() -> Flask:
         payload = decode_token(refresh_token, expected_type='refresh')
         if not payload:
             response = make_response(jsonify({'error': 'Invalid refresh token'}), 401)
-            response.delete_cookie('refresh_token')
+            response.set_cookie(
+                'refresh_token',
+                '',
+                max_age=0,
+                httponly=True,
+                secure=app.config['SESSION_COOKIE_SECURE'],
+                samesite=app.config['SESSION_COOKIE_SAMESITE'],
+            )
             return response
         user = User.query.get(payload.get('sub'))
         if not user:
             response = make_response(jsonify({'error': 'Unknown user'}), 401)
-            response.delete_cookie('refresh_token')
+            response.set_cookie(
+                'refresh_token',
+                '',
+                max_age=0,
+                httponly=True,
+                secure=app.config['SESSION_COOKIE_SECURE'],
+                samesite=app.config['SESSION_COOKIE_SAMESITE'],
+            )
             return response
         access_token = generate_token(user.id, 'access')
         return jsonify({'access_token': access_token, 'user': user.to_dict()})
@@ -771,8 +785,19 @@ def create_app() -> Flask:
 
     @app.post("/auth/logout")
     def logout():
+        print(f"[DEBUG] /auth/logout called", flush=True)
+        print(f"[DEBUG] g.current_user before logout: {g.current_user}", flush=True)
         response = make_response(jsonify({'message': 'Logged out'}))
-        response.delete_cookie('refresh_token')
+        # Delete refresh_token cookie by setting max_age=0
+        response.set_cookie(
+            'refresh_token',
+            '',
+            max_age=0,
+            httponly=True,
+            secure=app.config['SESSION_COOKIE_SECURE'],
+            samesite=app.config['SESSION_COOKIE_SAMESITE'],
+        )
+        print(f"[DEBUG] Deleted refresh_token cookie", flush=True)
         return response
 
     @app.delete("/auth/delete-account")
@@ -803,7 +828,14 @@ def create_app() -> Flask:
             
             # Clear cookies and return success response
             response = make_response(jsonify({'message': 'Account deleted successfully'}), 200)
-            response.delete_cookie('refresh_token')
+            response.set_cookie(
+                'refresh_token',
+                '',
+                max_age=0,
+                httponly=True,
+                secure=app.config['SESSION_COOKIE_SECURE'],
+                samesite=app.config['SESSION_COOKIE_SAMESITE'],
+            )
             response.delete_cookie('user_id')
             return response
             

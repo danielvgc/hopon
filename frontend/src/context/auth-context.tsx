@@ -327,11 +327,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = React.useCallback(async () => {
     try {
+      console.log("[AuthContext] Logging out...");
       await Api.logout();
-    } catch {
+      console.log("[AuthContext] Logout successful, clearing local state");
+    } catch (err) {
       // ignore backend errors during logout
+      console.log("[AuthContext] Logout error (ignored):", err);
     } finally {
       closePopup();
+      console.log("[AuthContext] Calling resetToGuest");
       resetToGuest();
     }
   }, [closePopup, resetToGuest]);
