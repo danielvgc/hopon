@@ -62,6 +62,16 @@ export default function SignupPage() {
         err instanceof Error
           ? err.message
           : "Failed to sign up. Please try again.";
+      
+      // Check if account already exists and redirect to login
+      if (errMsg.toLowerCase().includes("already exists") || 
+          errMsg.toLowerCase().includes("already registered") ||
+          errMsg.toLowerCase().includes("email already") ||
+          errMsg.toLowerCase().includes("user already")) {
+        router.push("/login");
+        return;
+      }
+      
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -84,6 +94,16 @@ export default function SignupPage() {
     } catch (err: unknown) {
       const errMsg =
         err instanceof Error ? err.message : "Failed to sign up with Google";
+      
+      // Check if account already exists and redirect to login
+      if (errMsg.toLowerCase().includes("already exists") || 
+          errMsg.toLowerCase().includes("already registered") ||
+          errMsg.toLowerCase().includes("email already") ||
+          errMsg.toLowerCase().includes("user already")) {
+        router.push("/login");
+        return;
+      }
+      
       setError(errMsg);
     } finally {
       setLoading(false);
