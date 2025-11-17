@@ -3,11 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { user, status } = useAuth();
+
   useEffect(() => {
     document.title = "HopOn - Find Pickup Games Nearby";
   }, []);
+
+  // Redirect authenticated users to home
+  useEffect(() => {
+    if (status === "authenticated" && user) {
+      router.push("/home");
+    }
+  }, [status, user, router]);
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-neutral-950 via-neutral-950 to-red-950/10">
       {/* Hero Section */}

@@ -219,8 +219,9 @@ export default function ProfilePage() {
   const handleDeleteAccount = async () => {
     try {
       await Api.deleteAccount();
-      // Account deleted successfully, logout
+      // Account deleted successfully, logout and redirect to landing page
       await logout();
+      router.push("/");
     } catch (error) {
       console.error("Failed to delete account:", error);
       alert("Failed to delete account. Please try again.");
@@ -309,7 +310,11 @@ export default function ProfilePage() {
             {/* Quick action buttons */}
             <div className="md:ml-auto flex flex-col gap-2 sm:gap-3 w-full md:w-auto">
               <button
-                onClick={() => logout().catch(() => undefined)}
+                onClick={() => {
+                  logout().then(() => {
+                    router.push("/");
+                  }).catch(() => undefined);
+                }}
                 className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border border-neutral-700 text-xs sm:text-sm text-neutral-300 hover:border-red-400 hover:text-red-300 transition font-medium"
               >
                 Log Out
