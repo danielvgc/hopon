@@ -17,6 +17,14 @@ export default function SignupPage() {
   const router = useRouter();
   const { signup, loginWithGoogle, user, status } = useAuth();
 
+  // If already authenticated, redirect to home
+  useEffect(() => {
+    if (status === "authenticated" && user) {
+      console.log("[Signup] User already authenticated, redirecting to home");
+      router.push("/home");
+    }
+  }, [status, user, router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
