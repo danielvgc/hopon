@@ -124,6 +124,8 @@ export default function MapDisplay({
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
         zoom: 13,
         center: mapCenter,
+        draggable: true,
+        gestureHandling: "greedy",
         styles: [
           { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
           { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
