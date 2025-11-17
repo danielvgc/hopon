@@ -97,7 +97,7 @@ def create_app() -> Flask:
     # auth flow locally without registering an OAuth app.
     app.config['DEV_GOOGLE_LOGIN'] = os.environ.get('DEV_GOOGLE_LOGIN', 'false').lower() == 'true'
     app.config['JWT_SECRET'] = os.environ.get('JWT_SECRET', 'dev-jwt-secret')
-    app.config['JWT_ACCESS_EXPIRES'] = int(os.environ.get('JWT_ACCESS_EXPIRES', '900'))  # 15 minutes
+    app.config['JWT_ACCESS_EXPIRES'] = int(os.environ.get('JWT_ACCESS_EXPIRES', '86400'))  # 24 hours
     app.config['JWT_REFRESH_EXPIRES'] = int(os.environ.get('JWT_REFRESH_EXPIRES', '604800'))  # 7 days
     app.config['SESSION_COOKIE_SAMESITE'] = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
     app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() == 'true'
@@ -169,9 +169,12 @@ def create_app() -> Flask:
     def decode_token(token: str, expected_type: Optional[str] = None) -> Optional[dict]:
         try:
             payload = jwt.decode(token, app.config['JWT_SECRET'], algorithms=['HS256'])
-        except jwt.PyJWTError:
+            print(f"[DEBUG] Token decoded successfully. Type: {payload.get('type')}, Sub: {payload.get('sub')}", flush=True)
+        except jwt.PyJWTError as e:
+            print(f"[DEBUG] JWT decode failed: {e}", flush=True)
             return None
         if expected_type and payload.get('type') != expected_type:
+            print(f"[DEBUG] Token type mismatch. Expected: {expected_type}, Got: {payload.get('type')}", flush=True)
             return None
         return payload
 
@@ -321,11 +324,15 @@ def create_app() -> Flask:
         auth_header = request.headers.get('Authorization', '')
         if auth_header.startswith('Bearer '):
             token = auth_header.split(' ', 1)[1].strip()
+            print(f"[DEBUG] Token received (first 20 chars): {token[:20]}...", flush=True)
             payload = decode_token(token, expected_type='access')
+            print(f"[DEBUG] Token validation result: {payload}", flush=True)
             if payload:
                 user = User.query.get(payload.get('sub'))
+                print(f"[DEBUG] User query result: {user}", flush=True)
                 if user:
                     g.current_user = user
+                    print(f"[DEBUG] Current user set to: {user.username}", flush=True)
 
     @app.get("/health")
     def health():
@@ -796,15 +803,22 @@ def create_app() -> Flask:
 
     @app.get("/auth/session")
     def session_info():
+        print(f"[DEBUG] /auth/session called", flush=True)
+        print(f"[DEBUG] g.current_user: {g.current_user}", flush=True)
         if g.current_user:
+            print(f"[DEBUG] Returning authenticated user: {g.current_user.username}", flush=True)
             return jsonify({'authenticated': True, 'user': g.current_user.to_dict()}), 200
         refresh_token = request.cookies.get('refresh_token')
+        print(f"[DEBUG] Refresh token cookie present: {bool(refresh_token)}", flush=True)
         if refresh_token:
             payload = decode_token(refresh_token, expected_type='refresh')
+            print(f"[DEBUG] Refresh token validation result: {payload}", flush=True)
             if payload:
                 user = User.query.get(payload.get('sub'))
+                print(f"[DEBUG] User from refresh token: {user}", flush=True)
                 if user:
                     access_token = generate_token(user.id, 'access')
+                    print(f"[DEBUG] Generated new access token for: {user.username}", flush=True)
                     return (
                         jsonify(
                             {
@@ -815,6 +829,7 @@ def create_app() -> Flask:
                         ),
                         200,
                     )
+        print(f"[DEBUG] Session check failed - not authenticated", flush=True)
         return jsonify({'authenticated': False}), 200
 
     @app.get("/auth/username-available")
