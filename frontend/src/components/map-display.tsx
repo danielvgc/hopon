@@ -101,10 +101,14 @@ export default function MapDisplay({
     if (loading || !mapRef.current || !window.google?.maps || events.length === 0) return;
 
     if (!mapInstanceRef.current) {
-      // Use provided center if available, otherwise calculate from events
+      // Priority: 1) Real-time user location, 2) Provided center, 3) Event average
       let mapCenter;
       
-      if (center && center.lat && center.lng) {
+      if (userLocation) {
+        // Use real-time location if available
+        mapCenter = userLocation;
+      } else if (center && center.lat && center.lng) {
+        // Fall back to provided center
         mapCenter = center;
       } else {
         // Calculate center from all events
@@ -256,6 +260,13 @@ export default function MapDisplay({
       userLocationMarkerRef.current.setPosition(userLocation);
     }
   }, [userLocation, loading, showUserLocation]);
+
+  // Pan map to real-time location when it updates
+  useEffect(() => {
+    if (!mapInstanceRef.current || !userLocation) return;
+    
+    mapInstanceRef.current.panTo(userLocation);
+  }, [userLocation]);
 
   if (!apiKey) {
     return (
