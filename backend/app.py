@@ -322,6 +322,7 @@ def create_app() -> Flask:
     def attach_current_user():
         g.current_user = None
         auth_header = request.headers.get('Authorization', '')
+        print(f"[DEBUG] Request to {request.path} - Auth header present: {bool(auth_header)}", flush=True)
         if auth_header.startswith('Bearer '):
             token = auth_header.split(' ', 1)[1].strip()
             print(f"[DEBUG] Token received (first 20 chars): {token[:20]}...", flush=True)

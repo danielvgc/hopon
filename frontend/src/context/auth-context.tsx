@@ -212,6 +212,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        // Before fetching session, restore any stored access token to the API module
+        // This ensures the Authorization header is sent to /auth/session
+        if (typeof window !== "undefined") {
+          const storedToken = window.localStorage.getItem("hopon_access_token");
+          if (storedToken) {
+            console.log("[AuthContext] Restoring stored access token for session check");
+            setAccessToken(storedToken);
+          }
+        }
+
         // If no stored payload, fetch session from backend
         const result = await Api.session();
         if (cancelled) {
