@@ -819,28 +819,9 @@ def create_app() -> Flask:
         if g.current_user:
             print(f"[DEBUG] Returning authenticated user: {g.current_user.username}", flush=True)
             return jsonify({'authenticated': True, 'user': g.current_user.to_dict()}), 200
-        refresh_token = request.cookies.get('refresh_token')
-        print(f"[DEBUG] Refresh token cookie present: {bool(refresh_token)}", flush=True)
-        if refresh_token:
-            payload = decode_token(refresh_token, expected_type='refresh')
-            print(f"[DEBUG] Refresh token validation result: {payload}", flush=True)
-            if payload:
-                user = User.query.get(payload.get('sub'))
-                print(f"[DEBUG] User from refresh token: {user}", flush=True)
-                if user:
-                    access_token = generate_token(user.id, 'access')
-                    print(f"[DEBUG] Generated new access token for: {user.username}", flush=True)
-                    return (
-                        jsonify(
-                            {
-                                'authenticated': True,
-                                'user': user.to_dict(),
-                                'access_token': access_token,
-                            }
-                        ),
-                        200,
-                    )
-        print(f"[DEBUG] Session check failed - not authenticated", flush=True)
+        # Session endpoint only checks Authorization header (access token)
+        # Don't use refresh_token cookie here - that's for explicit refresh endpoint
+        print(f"[DEBUG] Session check failed - not authenticated (no valid access token)", flush=True)
         return jsonify({'authenticated': False}), 200
 
     @app.get("/auth/username-available")

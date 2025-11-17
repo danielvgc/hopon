@@ -20,6 +20,19 @@ export default function LandingPage() {
       router.push("/home");
     }
   }, [status, user, router]);
+
+  // Show loading state while checking session
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-neutral-950 via-neutral-950 to-red-950/10">
+        <div className="text-center space-y-4">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+          <p className="text-neutral-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-neutral-950 via-neutral-950 to-red-950/10">
       {/* Hero Section */}
