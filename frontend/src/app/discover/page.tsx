@@ -81,7 +81,18 @@ export default function DiscoverPage() {
 
   function handleViewEventDetails(event: HopOnEvent) {
     setSelectedEventForModal(event);
-    setEventParticipants([]);
+    try {
+      // Fetch participants for this event
+      Api.getEventParticipants(event.id).then((result) => {
+        setEventParticipants(result.participants || []);
+      }).catch((error) => {
+        console.error("Failed to load event participants:", error);
+        setEventParticipants([]);
+      });
+    } catch (error) {
+      console.error("Failed to load event participants:", error);
+      setEventParticipants([]);
+    }
   }
 
   function handleCloseModal() {

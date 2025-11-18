@@ -339,37 +339,47 @@ export function EventDetailsModal({
 
             {/* Participants Section */}
             <div className="border-t border-neutral-700 pt-6">
-              <h3 className="text-sm sm:text-base font-semibold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-semibold text-white mb-4 flex items-center gap-2">
                 <Users className="size-5" />
-                Participants ({participants.length})
+                Players ({participants.length}/{event.max_players})
               </h3>
               {participants.length > 0 ? (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
                   {participants.map((participant) => (
                     <div
                       key={participant.id}
-                      className="flex items-center justify-between bg-neutral-800/40 rounded-lg p-3"
+                      className="relative rounded-lg border border-neutral-700 bg-neutral-800/40 hover:bg-neutral-800/60 backdrop-blur p-3 transition group"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-white">
-                          {participant.username}
-                        </p>
-                        {participant.rating && (
-                          <p className="text-xs text-neutral-400">
-                            Rating: {participant.rating.toFixed(1)}
-                          </p>
-                        )}
+                      {/* Avatar */}
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-red-600 text-lg font-bold uppercase text-white mx-auto mb-2">
+                        {participant.username.slice(0, 1)}
                       </div>
+                      
+                      {/* Username */}
+                      <p className="text-sm font-medium text-white text-center truncate">
+                        {participant.username}
+                      </p>
+                      
+                      {/* Rating */}
+                      {participant.rating && (
+                        <p className="text-xs text-neutral-400 text-center mt-1">
+                          ⭐ {participant.rating.toFixed(1)}
+                        </p>
+                      )}
+                      
+                      {/* Host Badge */}
                       {participant.id === event.host_user_id && (
-                        <span className="text-xs font-semibold text-red-500 bg-red-500/20 px-2 py-1 rounded">
-                          Host
-                        </span>
+                        <div className="absolute top-2 right-2">
+                          <span className="text-xs font-semibold text-red-400 bg-red-500/20 border border-red-500/40 px-2 py-0.5 rounded-full">
+                            Host
+                          </span>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-neutral-400">No participants yet.</p>
+                <p className="text-sm text-neutral-400 text-center py-6">No participants yet. Be the first to join!</p>
               )}
             </div>
 

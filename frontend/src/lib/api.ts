@@ -262,4 +262,9 @@ export const Api = {
       method: "DELETE",
     });
   },
+  async getEventParticipants(eventId: number) {
+    return http<{ participants: HopOnUser[] }>(`/events/${eventId}/participants`, {
+      method: "GET",
+    });
+  },
 };

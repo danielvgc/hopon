@@ -102,11 +102,12 @@ export default function HomePage() {
   async function handleViewEventDetails(event: HopOnEvent) {
     setSelectedEventForModal(event);
     try {
-      // Fetch participants - this would need a backend endpoint
-      // For now, we'll fetch all events and extract participants
-      setEventParticipants([]); // Placeholder
+      // Fetch participants for this event
+      const result = await Api.getEventParticipants(event.id);
+      setEventParticipants(result.participants || []);
     } catch (error) {
-      console.error("Failed to load event details", error);
+      console.error("Failed to load event participants:", error);
+      setEventParticipants([]);
     }
   }
 
