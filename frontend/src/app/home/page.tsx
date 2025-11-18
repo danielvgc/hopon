@@ -10,6 +10,7 @@ import * as React from "react";
 import { FALLBACK_EVENTS } from "@/lib/fallback-data";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 export default function HomePage() {
   React.useEffect(() => {
@@ -30,12 +31,22 @@ export default function HomePage() {
   const [selectedEventForModal, setSelectedEventForModal] = React.useState<HopOnEvent | null>(null);
   const [eventParticipants, setEventParticipants] = React.useState<HopOnUser[]>([]);
   const { status, user } = useAuth();
+  
+  // Get user's real-time location, fallback to profile location
+  const { location } = useUserLocation(
+    user?.latitude && user?.longitude ? { lat: user.latitude, lng: user.longitude } : null
+  );
 
   const loadData = React.useCallback(async () => {
     try {
       console.log("Loading nearby events...");
-      // Pass user's location for distance-based sorting
-      const params = user?.latitude && user?.longitude ? { lat: user.latitude, lng: user.longitude } : undefined;
+      // Use real-time location if available, otherwise fall back to profile location
+      const params = location ? { lat: location.lat, lng: location.lng } : undefined;
+      if (location) {
+        console.log("[Home] Using real-time location for sorting:", location);
+      } else if (user?.latitude && user?.longitude) {
+        console.log("[Home] Using profile location for sorting:", { lat: user.latitude, lng: user.longitude });
+      }
       const nearby = await Api.nearbyEvents(params);
       console.log("Nearby events loaded (sorted by distance):", nearby);
       let joined: HopOnEvent[] = [];
@@ -59,7 +70,7 @@ export default function HomePage() {
       setHostedEvents([]);
       setErrorMessage("Couldn't load events. Check your connection and try again.");
     }
-  }, [status, user?.latitude, user?.longitude]);
+  }, [status, location, user?.latitude, user?.longitude]);
 
   const availableSports = React.useMemo(() => {
     const sportsSource =

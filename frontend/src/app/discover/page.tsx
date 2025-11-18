@@ -10,6 +10,7 @@ import { Api, type HopOnEvent, type HopOnUser } from "@/lib/api";
 import { FALLBACK_EVENTS, FALLBACK_PLAYERS } from "@/lib/fallback-data";
 import * as React from "react";
 import { useAuth } from "@/context/auth-context";
+import { useUserLocation } from "@/hooks/useUserLocation";
 
 type PlayerDisplay = {
   id: string;
@@ -57,6 +58,11 @@ export default function DiscoverPage() {
   const [selectedEventForModal, setSelectedEventForModal] = React.useState<HopOnEvent | null>(null);
   const [eventParticipants, setEventParticipants] = React.useState<HopOnUser[]>([]);
   const { user } = useAuth();
+  
+  // Get user's real-time location, fallback to profile location
+  const { location } = useUserLocation(
+    user?.latitude && user?.longitude ? { lat: user.latitude, lng: user.longitude } : null
+  );
 
   // Fetch players - same for everyone
   React.useEffect(() => {
@@ -66,8 +72,13 @@ export default function DiscoverPage() {
   // Fetch events - same for everyone, with auto-refresh every 30 seconds
   React.useEffect(() => {
     const fetchEvents = () => {
-      // Pass user's location for distance-based sorting
-      const params = user?.latitude && user?.longitude ? { lat: user.latitude, lng: user.longitude } : undefined;
+      // Use real-time location if available, otherwise fall back to profile location
+      const params = location ? { lat: location.lat, lng: location.lng } : undefined;
+      if (location) {
+        console.log("[Discover] Using real-time location for sorting:", location);
+      } else if (user?.latitude && user?.longitude) {
+        console.log("[Discover] Using profile location for sorting:", { lat: user.latitude, lng: user.longitude });
+      }
       Api.nearbyEvents(params).then(setEvents).catch(() => setEvents([]));
     };
 
@@ -79,7 +90,7 @@ export default function DiscoverPage() {
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [user?.latitude, user?.longitude]);
+  }, [location, user?.latitude, user?.longitude]);
 
   function handleViewEventDetails(event: HopOnEvent) {
     setSelectedEventForModal(event);
@@ -104,8 +115,8 @@ export default function DiscoverPage() {
 
   function handleEventDeleted() {
     handleCloseModal();
-    // Refetch events with user's location for distance-based sorting
-    const params = user?.latitude && user?.longitude ? { lat: user.latitude, lng: user.longitude } : undefined;
+    // Refetch events with real-time location if available, otherwise profile location
+    const params = location ? { lat: location.lat, lng: location.lng } : undefined;
     Api.nearbyEvents(params).then(setEvents).catch(() => setEvents([]));
   }
 
@@ -468,8 +479,8 @@ export default function DiscoverPage() {
           onEventDeleted={handleEventDeleted}
           onEventUpdated={() => {
             handleCloseModal();
-            // Refetch events with user's location for distance-based sorting
-            const params = user?.latitude && user?.longitude ? { lat: user.latitude, lng: user.longitude } : undefined;
+            // Refetch events with real-time location if available, otherwise profile location
+            const params = location ? { lat: location.lat, lng: location.lng } : undefined;
             Api.nearbyEvents(params).then(setEvents).catch(() => setEvents([]));
           }}
           participants={eventParticipants}
