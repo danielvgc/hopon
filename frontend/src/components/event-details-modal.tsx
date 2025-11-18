@@ -352,12 +352,12 @@ export function EventDetailsModal({
                     >
                       {/* Avatar */}
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-red-600 text-lg font-bold uppercase text-white mx-auto mb-2">
-                        {participant.username.slice(0, 1)}
+                        {(participant.username || "?").slice(0, 1)}
                       </div>
                       
                       {/* Username */}
                       <p className="text-sm font-medium text-white text-center truncate">
-                        {participant.username}
+                        {participant.username || "Unknown"}
                       </p>
                       
                       {/* Rating */}

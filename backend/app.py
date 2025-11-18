@@ -1305,13 +1305,20 @@ def create_app() -> Flask:
 
     @app.get("/events/<int:event_id>/participants")
     def get_event_participants(event_id):
-        """Get all participants for a specific event"""
+        """Get all participants (users) for a specific event"""
         event = Event.query.get_or_404(event_id)
         participants = EventParticipant.query.filter_by(event_id=event_id).all()
         
+        # Get the actual user objects for participants who are registered users
+        users = []
+        for participant in participants:
+            if participant.user_id:
+                user = User.query.get(participant.user_id)
+                if user:
+                    users.append(user.to_dict())
+        
         return jsonify({
-            'event': event.to_dict(),
-            'participants': [participant.to_dict() for participant in participants]
+            'participants': users
         }), 200
 
     # User Management
