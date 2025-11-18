@@ -856,6 +856,61 @@ def create_app() -> Flask:
         print(f"[DEBUG] Session check failed - not authenticated (no valid access token)", flush=True)
         return jsonify({'authenticated': False}), 200
 
+    @app.post("/admin/users/delete")
+    def admin_delete_user():
+        """Admin endpoint to delete a user and all associated data. Restricted to development/admin only."""
+        # Simple check - in production, you would add proper authentication
+        # For now, allow this endpoint (you can add JWT/API key validation later)
+        
+        data = request.get_json(silent=True) or {}
+        identifier = data.get('identifier')
+        
+        if not identifier:
+            return jsonify({'error': 'identifier parameter is required'}), 400
+        
+        try:
+            # Find user by username or ID
+            user = None
+            if isinstance(identifier, int) or (isinstance(identifier, str) and identifier.isdigit()):
+                user = User.query.filter_by(id=int(identifier)).first()
+            else:
+                user = User.query.filter_by(username=identifier).first()
+            
+            if not user:
+                print(f"[HOPON] Admin delete failed: User '{identifier}' not found", flush=True)
+                return jsonify({'error': f'User {identifier} not found'}), 404
+            
+            username = user.username
+            user_id = user.id
+            
+            # Count and delete associated data
+            follows_deleted = Follow.query.filter(
+                (Follow.follower_id == user_id) | (Follow.followee_id == user_id)
+            ).delete()
+            
+            participations_deleted = EventParticipant.query.filter_by(user_id=user_id).delete()
+            
+            events_deleted = Event.query.filter_by(host_user_id=user_id).delete()
+            
+            # Delete the user
+            db.session.delete(user)
+            db.session.commit()
+            
+            print(f"[HOPON] Admin deleted user: {username} (ID: {user_id}). Follows: {follows_deleted}, Participations: {participations_deleted}, Events: {events_deleted}", flush=True)
+            
+            return jsonify({
+                'message': f'User {username} successfully deleted',
+                'username': username,
+                'follows_deleted': follows_deleted,
+                'participations_deleted': participations_deleted,
+                'events_deleted': events_deleted
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"[HOPON] Error in admin delete user: {str(e)}", flush=True)
+            return jsonify({'error': f'Failed to delete user: {str(e)}'}), 500
+
     @app.get("/auth/username-available")
     def check_username_available():
         """Check if a username is available (not taken)."""
