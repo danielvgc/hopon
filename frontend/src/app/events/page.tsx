@@ -228,10 +228,12 @@ export default function EventsPage() {
                   ? isCurrent
                     ? "Leaving..."
                     : "Leave"
-                  : "View"
+                  : isHost
+                    ? "Host"
+                    : "View"
               }
               onRightActionClick={isJoinedTab && !isHost ? () => handleLeave(e.id) : undefined}
-              disabled={isCurrent || (isJoinedTab && isHost)}
+              disabled={isCurrent || isHost}
             />
           );
         })}

@@ -326,18 +326,23 @@ export default function HomePage() {
                     description={event.notes || undefined}
                     onViewDetails={() => handleViewEventDetails(event)}
                     onRightActionClick={
-                      joinedSet.has(event.id)
+                      joinedSet.has(event.id) && event.host_user_id !== user?.id
                         ? () => handleLeave(event.id)
+                        : joinedSet.has(event.id) ? undefined
                         : () => handleJoin(event.id)
                     }
                     rightActionLabel={(() => {
                       const isPending = pendingAction?.id === event.id;
                       if (joinedSet.has(event.id)) {
+                        // If user is the host, show disabled state
+                        if (event.host_user_id === user?.id) {
+                          return "Host";
+                        }
                         return isPending && pendingAction?.type === "leave" ? "Leaving..." : "Leave";
                       }
                       return isPending && pendingAction?.type === "join" ? "Joining..." : "Join";
                     })()}
-                    disabled={pendingAction?.id === event.id}
+                    disabled={pendingAction?.id === event.id || event.host_user_id === user?.id}
                   />
                 )))}
         </div>
