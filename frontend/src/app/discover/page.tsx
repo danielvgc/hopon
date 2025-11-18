@@ -63,9 +63,20 @@ export default function DiscoverPage() {
     Api.playersNearby().then(setPlayers).catch(() => setPlayers([]));
   }, []);
 
-  // Fetch events - same for everyone
+  // Fetch events - same for everyone, with auto-refresh every 30 seconds
   React.useEffect(() => {
-    Api.nearbyEvents().then(setEvents).catch(() => setEvents([]));
+    const fetchEvents = () => {
+      Api.nearbyEvents().then(setEvents).catch(() => setEvents([]));
+    };
+
+    // Fetch immediately on mount
+    fetchEvents();
+
+    // Set up interval to fetch every 30 seconds for real-time updates
+    const intervalId = setInterval(fetchEvents, 30000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   function handleViewEventDetails(event: HopOnEvent) {

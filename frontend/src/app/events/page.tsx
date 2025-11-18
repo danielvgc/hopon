@@ -47,6 +47,14 @@ export default function EventsPage() {
 
   React.useEffect(() => {
     void loadMyEvents();
+
+    // Set up interval to fetch events every 30 seconds for real-time updates
+    const intervalId = setInterval(() => {
+      void loadMyEvents();
+    }, 30000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, [loadMyEvents]);
 
   function handleViewEventDetails(event: HopOnEvent) {

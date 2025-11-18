@@ -89,6 +89,14 @@ export default function HomePage() {
 
   React.useEffect(() => {
     void loadData();
+
+    // Set up interval to fetch events every 30 seconds for real-time updates
+    const intervalId = setInterval(() => {
+      void loadData();
+    }, 30000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, [loadData]);
 
   async function handleViewEventDetails(event: HopOnEvent) {
