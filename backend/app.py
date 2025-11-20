@@ -104,25 +104,35 @@ def create_app() -> Flask:
 
     # Initialize extensions
     db.init_app(app)
-    # Support a comma-separated list of allowed frontend origins (e.g. for localhost, 127.0.0.1, staging)
-    frontend_origins_env = os.environ.get('FRONTEND_ORIGINS')
-    if frontend_origins_env:
-        frontend_origins = [o.strip() for o in frontend_origins_env.split(',') if o.strip()]
-    else:
-        frontend_origins = [os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')]
-
-    # Add production domain explicitly
-    frontend_origins.append('https://hopon-pruebas.vercel.app')
     
-    # Log the configured origins for debugging
+    # Configure allowed frontend origins
+    frontend_origins = [
+        'http://localhost:3000',
+        'http://localhost:3001', 
+        'http://127.0.0.1:3000',
+        'https://hopon-pruebas.vercel.app',
+        'https://hopon-v1.vercel.app'
+    ]
+    
+    # Configure CORS - allow all vercel.app domains and localhost for development
+    CORS(app, 
+         supports_credentials=True, 
+         methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+         resources={r"/*": {
+             "origins": frontend_origins + ["https://*.vercel.app"],
+             "allow_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": True
+         }})
+    
+    # Log for debugging
     print(f"[HOPON] CORS configured for origins: {frontend_origins}", flush=True)
 
-    # Custom CORS handler to allow *.vercel.app domains with credentials
+    # Custom CORS handler as backup to ensure headers are set
     def cors_middleware(response):
         origin = request.headers.get('Origin')
         if origin:
-            # Check if origin matches allowed list or is a vercel.app subdomain
-            if origin in frontend_origins or origin.endswith('.vercel.app'):
+            # Allow all vercel.app domains or localhost
+            if origin.endswith('.vercel.app') or origin.startswith('http://localhost') or origin.startswith('http://127.0.0.1'):
                 response.headers['Access-Control-Allow-Origin'] = origin
                 response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD'
                 response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
@@ -130,9 +140,6 @@ def create_app() -> Flask:
         return response
 
     app.after_request(cors_middleware)
-    
-    # Also use CORS() for basic preflight handling
-    CORS(app, supports_credentials=True, methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'], resources={r"/*": {"origins": frontend_origins}})
 
     oauth = OAuth()
     oauth.init_app(app)
